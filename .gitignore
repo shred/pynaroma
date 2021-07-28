@@ -1,0 +1,6 @@
+/dist/
+/site/
+/*.egg
+/*.egg-info
+*.py[cod]
+*.tzx
