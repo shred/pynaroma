@@ -40,12 +40,10 @@ def read32bit(lowFile, highFile, targetFileName, limit=None):
                 limit -= 4
             if not (data := highFile.read(2)):
                 break
-            target.write(bytes([data[1]]))
-            target.write(bytes([data[0]]))
+            target.write(bytes([data[1], data[0]]))
             if not (data := lowFile.read(2)):
                 break
-            target.write(bytes([data[1]]))
-            target.write(bytes([data[0]]))
+            target.write(bytes([data[1], data[0]]))
 
 def read16bit(sourceFile, targetFileName, limit=None):
     with open(targetFileName, 'wb') as target:
@@ -54,8 +52,7 @@ def read16bit(sourceFile, targetFileName, limit=None):
                 limit -= 2
             if not (data := sourceFile.read(2)):
                 break
-            target.write(bytes([data[1]]))
-            target.write(bytes([data[0]]))
+            target.write(bytes([data[1], data[0]]))
 
 def splitRead32bit(lowFile, highFile, baseFileName, split):
     lowSize = getFileSize(lowFile)

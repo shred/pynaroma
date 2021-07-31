@@ -28,30 +28,24 @@ def write32bit(lowFile, highFile, sourceFiles, duplicate=False):
             for srcFile in sourceFiles:
                 with open(srcFile, 'rb') as src:
                     while data := src.read(4):
-                        low.write(bytes([data[3]]))
-                        low.write(bytes([data[2]]))
-                        high.write(bytes([data[1]]))
-                        high.write(bytes([data[0]]))
+                        low.write(bytes([data[3], data[2]]))
+                        high.write(bytes([data[1], data[0]]))
                 if duplicate:
                     with open(srcFile, 'rb') as src:
                         while data := src.read(4):
-                            low.write(bytes([data[3]]))
-                            low.write(bytes([data[2]]))
-                            high.write(bytes([data[1]]))
-                            high.write(bytes([data[0]]))
+                            low.write(bytes([data[3], data[2]]))
+                            high.write(bytes([data[1], data[0]]))
 
 def write16bit(targetFile, sourceFiles, duplicate=False):
     with targetFile as target:
         for srcFile in sourceFiles:
             with open(srcFile, 'rb') as src:
                 while data := src.read(2):
-                    target.write(data[1])
-                    target.write(data[0])
+                    target.write(bytes([data[1], data[0]]))
             if duplicate:
                 with open(srcFile, 'rb') as src:
                     while data := src.read(2):
-                        target.write(data[1])
-                        target.write(data[0])
+                        target.write(bytes([data[1], data[0]]))
 
 def main():
     parser = argparse.ArgumentParser(description='Convert ROM dumps to BIN images')
