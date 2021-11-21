@@ -54,6 +54,18 @@ def read16bit(sourceFile, targetFileName, limit=None):
                 break
             target.write(bytes([data[1], data[0]]))
 
+def read8bit(lowFile, highFile, targetFileName, limit=None):
+    with open(targetFileName, 'wb') as target:
+        while limit is None or limit > 0:
+            if limit is not None:
+                limit -= 2
+            if not (data := lowFile.read(1)):
+                break
+            target.write(bytes([data[0]]))
+            if not (data := highFile.read(1)):
+                break
+            target.write(bytes([data[0]]))
+
 def splitRead32bit(lowFile, highFile, baseFileName, split):
     lowSize = getFileSize(lowFile)
     highSize = getFileSize(highFile)
@@ -76,6 +88,15 @@ def splitRead16bit(sourceFile, baseFileName, split):
     limit = fileSize // split
     for ix in range(split):
         read16bit(sourceFile, appendIndex(baseFileName, ix), limit)
+
+def splitRead8bit(sourceFile, baseFileName, split):
+    fileSize = getFileSize(sourceFile)
+    if fileSize % split != 0:
+        print('Cannot split source file size {} into {} chunks.'.format(fileSize, split), file=sys.stderr)
+        exit(1)
+    limit = fileSize // split
+    for ix in range(split):
+        read8bit(sourceFile, appendIndex(baseFileName, ix), limit)
 
 def main():
     parser = argparse.ArgumentParser(description='Convert BIN images to ROM dumps')
@@ -101,6 +122,10 @@ def main():
                 type=int,
                 choices=[1,2,4,8],
                 help='Split image into this number of ROM files.')
+    parser.add_argument('-8', '--8bit',
+                dest='bit8',
+                action='store_true',
+                help='Enable 8 bit mode.')
     args = parser.parse_args()
 
     if (args.low and not args.high) or (not args.low and args.high):
@@ -110,6 +135,11 @@ def main():
 
     if args.source and (args.low or args.high):
         print('--from cannot be combined with --low and --high.', file=sys.stderr)
+        parser.print_help(sys.stderr)
+        exit(1)
+
+    if args.bit8 and not (args.low or args.high):
+        print('--8bit requires --low and --high options.', file=sys.stderr)
         parser.print_help(sys.stderr)
         exit(1)
 
@@ -129,10 +159,16 @@ def main():
             exit(1)
 
     if args.low and args.high:
-        if args.split is not None and args.split != 1:
-            splitRead32bit(args.low, args.high, args.file[0], args.split)
+        if args.bit8:
+            if args.split is not None and args.split != 1:
+                splitRead8bit(args.low, args.high, args.file[0], args.split)
+            else:
+                read8bit(args.low, args.high, args.file[0])
         else:
-            read32bit(args.low, args.high, args.file[0])
+            if args.split is not None and args.split != 1:
+                splitRead32bit(args.low, args.high, args.file[0], args.split)
+            else:
+                read32bit(args.low, args.high, args.file[0])
     else:
         if args.split is not None and args.split != 1:
             splitRead16bit(args.source, args.file[0], args.split)

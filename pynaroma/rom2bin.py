@@ -47,6 +47,21 @@ def write16bit(targetFile, sourceFiles, duplicate=False):
                     while data := src.read(2):
                         target.write(bytes([data[1], data[0]]))
 
+def write8bit(lowFile, highFile, sourceFiles, duplicate=False):
+    with lowFile as low:
+        with highFile as high:
+            for srcFile in sourceFiles:
+                with open(srcFile, 'rb') as src:
+                    while data := src.read(2):
+                        low.write(bytes([data[0]]))
+                        high.write(bytes([data[1]]))
+                if duplicate:
+                    with open(srcFile, 'rb') as src:
+                        while data := src.read(2):
+                            low.write(bytes([data[0]]))
+                            high.write(bytes([data[1]]))
+
+
 def main():
     parser = argparse.ArgumentParser(description='Convert ROM dumps to BIN images')
     parser.add_argument('files',
@@ -69,6 +84,10 @@ def main():
                 dest='duplicate',
                 action='store_true',
                 help='Writes each source ROM file twice.')
+    parser.add_argument('-8', '--8bit',
+                dest='bit8',
+                action='store_true',
+                help='Enable 8 bit mode.')
     args = parser.parse_args()
 
     if (args.low and not args.high) or (not args.low and args.high):
@@ -81,7 +100,15 @@ def main():
         parser.print_help(sys.stderr)
         exit(1)
 
+    if args.bit8 and not (args.low or args.high):
+        print('--8bit requires --low and --high options.', file=sys.stderr)
+        parser.print_help(sys.stderr)
+        exit(1)
+
     if args.low and args.high:
-        write32bit(args.low, args.high, args.files, args.duplicate)
+        if args.bit8:
+            write8bit(args.low, args.high, args.files, args.duplicate)
+        else:
+            write32bit(args.low, args.high, args.files, args.duplicate)
     else:
         write16bit(args.to, args.files, args.duplicate)

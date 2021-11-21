@@ -109,6 +109,14 @@ The resulting files will be called `amiga4000-1.rom` and `amiga4000-2.rom`. Each
 
 `--split 4` would split the image into four ROM dump files, `--split 8` would split the image into eight ROM dumps. Other values (like `--split 3`) are not allowed because they would make no sense for obvious reasons.
 
+## 8-bit Mode
+
+Usually 16-bit ROMs are used in Amiga hardware. Some extensions (like Action Replay) use two 8-bit ROMs though. One ROM is for the lower, and the other one for the upper part of the 16-bit data bus.
+
+With the `--8bit` option, _pynaroma_ converts a ROM dump into two ROM images for 8-bit EPROMs, and vice versa. When the 8-bit mode is enabled, the lower part of the word (bit 0-7) is in the `--low` file, while the upper part of the word (bit 8-15) is in the `--high` file.
+
+The `--8bit` mode requires the `--low` and `--high` options to be set. This is not a limitation, because an 8-bit ROM dump and an 8-bit ROM image is essentially the same file. 😉
+
 ## Contribute
 
 * Fork the [Source code at GitHub](https://github.com/shred/pynaroma). Feel free to send pull requests.
