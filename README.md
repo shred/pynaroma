@@ -1,6 +1,6 @@
 # pynaroma
 
-This is a tiny collection of command line tools for generating Amiga ROM files from ROM dumps, and vice versa. It takes care for byte swapping, splitting, and merging different ROM files.
+This is a tiny collection of command line tools for generating ROM images from ROM dumps, and vice versa. It takes care for byte swapping, splitting, and merging different ROM files. It is mainly made for Amiga ROM images, but can also be used for Atari ROMs and other systems.
 
 ## Installation
 
@@ -22,6 +22,7 @@ In the following examples two kinds of files are mentioned. Both have different 
 
 * `rom2bin` - Converts ROM dumps into one or two ROM image files, ready for burning.
 * `bin2rom` - Converts one or two ROM image files into one or multiple ROM dumps.
+* `bin2split` - Splits a ROM image into smaller chunks for multiple EPROMs.
 
 ## Examples
 
@@ -76,6 +77,26 @@ rom2bin --to amiga500.bin kick1-3.rom kick1-3.rom kick2-04.rom
 ```
 
 The resulting `.bin` file is 1MB large, and permits to switch between Kick 1.3 and Kick 2.04.
+
+----
+
+If you need to write the resulting `.bin` file to multiple EPROMs, you can use `bin2split` to split the bin file into smaller chunks. In the following example, `kick.bin` is 512KB large, and we need four 128KB fragments from it.
+
+```sh
+bin2split --size 128K kick.bin
+```
+
+This line will generate four files: `kick-0.bin`, `kick-1.bin`, `kick-2.bin`, and `kick-3.bin`. Each file has a size of 128KB. Note that `bin2split` will just overwrite existing files.
+
+----
+
+An Atari ST TOS 1.04 image file is 192KB large. In order to burn it, it needs to be separated into upper and lower 8 bit images first. After that, each image needs to be split into three 32KB chunks, giving six image files.
+
+```sh
+rom2bin --8bit --low tos-low.bin --high tos-high.bin tos104.rom
+bin2split --size 32K tos-high.bin
+bin2split --size 32K tos-low.bin
+```
 
 ----
 

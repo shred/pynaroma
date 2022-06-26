@@ -66,6 +66,7 @@ setup(
         'console_scripts': [
             'rom2bin=pynaroma.rom2bin:main',
             'bin2rom=pynaroma.bin2rom:main',
+            'bin2split=pynaroma.bin2split:main',
         ],
     },
 )
