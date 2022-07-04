@@ -22,44 +22,62 @@
 import argparse
 import sys
 
-def write32bit(lowFile, highFile, sourceFiles, duplicate=False):
+def write32bit(lowFile, highFile, sourceFiles, duplicate=False, littleendian=False):
     with lowFile as low:
         with highFile as high:
             for srcFile in sourceFiles:
                 with open(srcFile, 'rb') as src:
                     while data := src.read(4):
-                        low.write(bytes([data[3], data[2]]))
-                        high.write(bytes([data[1], data[0]]))
+                        low.write(bytes([
+                            data[0 if littleendian else 3],
+                            data[1 if littleendian else 2]
+                        ]))
+                        high.write(bytes([
+                            data[2 if littleendian else 1],
+                            data[3 if littleendian else 0]
+                        ]))
                 if duplicate:
                     with open(srcFile, 'rb') as src:
                         while data := src.read(4):
-                            low.write(bytes([data[3], data[2]]))
-                            high.write(bytes([data[1], data[0]]))
+                            low.write(bytes([
+                                data[0 if littleendian else 3],
+                                data[1 if littleendian else 2]
+                            ]))
+                            high.write(bytes([
+                                data[2 if littleendian else 1],
+                                data[3 if littleendian else 0]
+                            ]))
 
-def write16bit(targetFile, sourceFiles, duplicate=False):
+def write16bit(targetFile, sourceFiles, duplicate=False, littleendian=False):
     with targetFile as target:
         for srcFile in sourceFiles:
             with open(srcFile, 'rb') as src:
                 while data := src.read(2):
-                    target.write(bytes([data[1], data[0]]))
+                    target.write(bytes([
+                        data[0 if littleendian else 1],
+                        data[1 if littleendian else 0]
+                    ]))
             if duplicate:
                 with open(srcFile, 'rb') as src:
                     while data := src.read(2):
-                        target.write(bytes([data[1], data[0]]))
+                        target.write(bytes([
+                            data[0 if littleendian else 1],
+                            data[1 if littleendian else 0]
+                        ]))
 
-def write8bit(lowFile, highFile, sourceFiles, duplicate=False):
+def write8bit(lowFile, highFile, sourceFiles, duplicate=False, littleendian=False):
     with lowFile as low:
         with highFile as high:
             for srcFile in sourceFiles:
                 with open(srcFile, 'rb') as src:
                     while data := src.read(2):
-                        low.write(bytes([data[0]]))
-                        high.write(bytes([data[1]]))
+                        low.write(bytes([data[0 if littleendian else 1]]))
+                        high.write(bytes([data[1 if littleendian else 0]]))
                 if duplicate:
                     with open(srcFile, 'rb') as src:
                         while data := src.read(2):
-                            low.write(bytes([data[0]]))
-                            high.write(bytes([data[1]]))
+                            low.write(bytes([data[0 if littleendian else 1]]))
+                            high.write(bytes([data[1 if littleendian else 0]]))
 
 
 def main():
@@ -88,6 +106,10 @@ def main():
                 dest='bit8',
                 action='store_true',
                 help='Enable 8 bit mode.')
+    parser.add_argument('-l', '--little', '--littleendian',
+                dest='littleendian',
+                action='store_true',
+                help='Uses little-endian mode, default is big-endian.')
     args = parser.parse_args()
 
     if (args.low and not args.high) or (not args.low and args.high):
@@ -107,8 +129,8 @@ def main():
 
     if args.low and args.high:
         if args.bit8:
-            write8bit(args.low, args.high, args.files, args.duplicate)
+            write8bit(args.low, args.high, args.files, duplicate=args.duplicate, littleendian=args.littleendian)
         else:
-            write32bit(args.low, args.high, args.files, args.duplicate)
+            write32bit(args.low, args.high, args.files, duplicate=args.duplicate, littleendian=args.littleendian)
     else:
-        write16bit(args.to, args.files, args.duplicate)
+        write16bit(args.to, args.files, duplicate=args.duplicate, littleendian=args.littleendian)

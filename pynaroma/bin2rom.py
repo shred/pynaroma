@@ -33,40 +33,53 @@ def appendIndex(fileName, index):
 def getFileSize(file):
     return os.path.getsize(file.name)
 
-def read32bit(lowFile, highFile, targetFileName, limit=None):
+def read32bit(lowFile, highFile, targetFileName, limit=None, littleendian=False):
+    endianHighFile = lowFile if littleendian else highFile
+    endianLowFile = highFile if littleendian else lowFile
     with open(targetFileName, 'wb') as target:
         while limit is None or limit > 0:
             if limit is not None:
                 limit -= 4
-            if not (data := highFile.read(2)):
+            if not (data := endianHighFile.read(2)):
                 break
-            target.write(bytes([data[1], data[0]]))
-            if not (data := lowFile.read(2)):
+            target.write(bytes([
+                data[0 if littleendian else 1],
+                data[1 if littleendian else 0]
+            ]))
+            if not (data := endianLowFile.read(2)):
                 break
-            target.write(bytes([data[1], data[0]]))
+            target.write(bytes([
+                data[0 if littleendian else 1],
+                data[1 if littleendian else 0]
+            ]))
 
-def read16bit(sourceFile, targetFileName, limit=None):
+def read16bit(sourceFile, targetFileName, limit=None, littleendian=False):
     with open(targetFileName, 'wb') as target:
         while limit is None or limit > 0:
             if limit is not None:
                 limit -= 2
             if not (data := sourceFile.read(2)):
                 break
-            target.write(bytes([data[1], data[0]]))
+            target.write(bytes([
+                data[0 if littleendian else 1],
+                data[1 if littleendian else 0]
+            ]))
 
-def read8bit(lowFile, highFile, targetFileName, limit=None):
+def read8bit(lowFile, highFile, targetFileName, limit=None, littleendian=False):
+    endianHighFile = lowFile if littleendian else highFile
+    endianLowFile = highFile if littleendian else lowFile
     with open(targetFileName, 'wb') as target:
         while limit is None or limit > 0:
             if limit is not None:
                 limit -= 2
-            if not (data := lowFile.read(1)):
+            if not (data := endianHighFile.read(1)):
                 break
             target.write(bytes([data[0]]))
-            if not (data := highFile.read(1)):
+            if not (data := endianLowFile.read(1)):
                 break
             target.write(bytes([data[0]]))
 
-def splitRead32bit(lowFile, highFile, baseFileName, split):
+def splitRead32bit(lowFile, highFile, baseFileName, split, littleendian=False):
     lowSize = getFileSize(lowFile)
     highSize = getFileSize(highFile)
     if lowSize != highSize:
@@ -78,25 +91,25 @@ def splitRead32bit(lowFile, highFile, baseFileName, split):
         exit(1)
     limit = fileSize // split
     for ix in range(split):
-        read32bit(lowFile, highFile, appendIndex(baseFileName, ix), limit)
+        read32bit(lowFile, highFile, appendIndex(baseFileName, ix), limit, littleendian)
 
-def splitRead16bit(sourceFile, baseFileName, split):
+def splitRead16bit(sourceFile, baseFileName, split, littleendian=False):
     fileSize = getFileSize(sourceFile)
     if fileSize % split != 0:
         print('Cannot split source file size {} into {} chunks.'.format(fileSize, split), file=sys.stderr)
         exit(1)
     limit = fileSize // split
     for ix in range(split):
-        read16bit(sourceFile, appendIndex(baseFileName, ix), limit)
+        read16bit(sourceFile, appendIndex(baseFileName, ix), limit, littleendian)
 
-def splitRead8bit(sourceFile, baseFileName, split):
+def splitRead8bit(sourceFile, baseFileName, split, littleendian=False):
     fileSize = getFileSize(sourceFile)
     if fileSize % split != 0:
         print('Cannot split source file size {} into {} chunks.'.format(fileSize, split), file=sys.stderr)
         exit(1)
     limit = fileSize // split
     for ix in range(split):
-        read8bit(sourceFile, appendIndex(baseFileName, ix), limit)
+        read8bit(sourceFile, appendIndex(baseFileName, ix), limit, littleendian)
 
 def main():
     parser = argparse.ArgumentParser(description='Convert BIN images to ROM dumps')
@@ -126,6 +139,10 @@ def main():
                 dest='bit8',
                 action='store_true',
                 help='Enable 8 bit mode.')
+    parser.add_argument('-l', '--little', '--littleendian',
+                dest='littleendian',
+                action='store_true',
+                help='Uses little-endian mode, default is big-endian.')
     args = parser.parse_args()
 
     if (args.low and not args.high) or (not args.low and args.high):
@@ -161,16 +178,16 @@ def main():
     if args.low and args.high:
         if args.bit8:
             if args.split is not None and args.split != 1:
-                splitRead8bit(args.low, args.high, args.file[0], args.split)
+                splitRead8bit(args.low, args.high, args.file[0], args.split, littleendian=args.littleendian)
             else:
-                read8bit(args.low, args.high, args.file[0])
+                read8bit(args.low, args.high, args.file[0], littleendian=args.littleendian)
         else:
             if args.split is not None and args.split != 1:
-                splitRead32bit(args.low, args.high, args.file[0], args.split)
+                splitRead32bit(args.low, args.high, args.file[0], args.split, littleendian=args.littleendian)
             else:
-                read32bit(args.low, args.high, args.file[0])
+                read32bit(args.low, args.high, args.file[0], littleendian=args.littleendian)
     else:
         if args.split is not None and args.split != 1:
-            splitRead16bit(args.source, args.file[0], args.split)
+            splitRead16bit(args.source, args.file[0], args.split, littleendian=args.littleendian)
         else:
-            read16bit(args.source, args.file[0])
+            read16bit(args.source, args.file[0], littleendian=args.littleendian)

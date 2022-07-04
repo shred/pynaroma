@@ -132,11 +132,19 @@ The resulting files will be called `amiga4000-1.rom` and `amiga4000-2.rom`. Each
 
 ## 8-bit Mode
 
-Usually 16-bit ROMs are used in Amiga hardware. Some extensions (like Action Replay) use two 8-bit ROMs though. One ROM is for the lower, and the other one for the upper part of the 16-bit data bus.
+Usually 16-bit ROMs are used in Amiga hardware. Some extensions (like Action Replay) use two 8-bit ROMs though. One ROM is for the lower, and the other one for the upper part of the 16-bit data bus. Also the Atari ST line uses 8-bit ROMs.
 
-With the `--8bit` option, _pynaroma_ converts a ROM dump into two ROM images for 8-bit EPROMs, and vice versa. When the 8-bit mode is enabled, the lower part of the word (bit 0-7) is in the `--low` file, while the upper part of the word (bit 8-15) is in the `--high` file.
+With the `--8bit` option, _pynaroma_ converts a ROM dump into two ROM images for 8-bit EPROMs, and vice versa. When the 8-bit mode is enabled, the upper part of the word (bit 8-15) is in the `--low` file, while the lower part of the word (bit 0-7) is in the `--high` file. This is because _pynaroma_ works in big-endian mode by default.
 
 The `--8bit` mode requires the `--low` and `--high` options to be set. This is not a limitation, because an 8-bit ROM dump and an 8-bit ROM image is essentially the same file. 😉
+
+## Endianness
+
+_pynaroma_ was made for Amiga and Atari enthusiasts. Since these machines base on the Motorola 68000 architecture, the default mode is big-endian, and byte swapping takes place when reading or writing ROM images (see [Endianness](https://en.wikipedia.org/wiki/Endianness)).
+
+If your target system has a little-endian architecture, you can set the `--little` option at `rom2bin` and `bin2rom`. If this option is set, no byte swapping is done.
+
+(Note: Up to version 0.3.0 the `--8bit` mode was little-endian, so the low and high files needed to be swapped on big-endian systems. Starting with version 0.4.0, big-endian is consistently used in all modes, and little-endian can be selected with the `--little` option.)
 
 ## Contribute
 
