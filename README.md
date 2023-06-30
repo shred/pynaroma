@@ -136,7 +136,7 @@ Usually 16-bit ROMs are used in Amiga hardware. Some extensions (like Action Rep
 
 With the `--8bit` option, _pynaroma_ converts a ROM dump into two ROM images for 8-bit EPROMs, and vice versa. When the 8-bit mode is enabled, the upper part of the word (bit 8-15) is in the `--low` file, while the lower part of the word (bit 0-7) is in the `--high` file. This is because _pynaroma_ works in big-endian mode by default.
 
-The `--8bit` mode requires the `--low` and `--high` options to be set. This is not a limitation, because an 8-bit ROM dump and an 8-bit ROM image is essentially the same file. 😉
+The `--8bit` mode requires the `--low` and `--high` options to be set. This is not a limitation, because an 8-bit ROM dump and an 8-bit ROM image is essentially the same file.
 
 ## Endianness
 
