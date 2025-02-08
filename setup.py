@@ -26,7 +26,7 @@ def readme():
 
 setup(
     name='pynaroma',
-    version='0.4.0',
+    version='0.4.1',
     description='Tools for converting Amiga ROM images',
     long_description=readme(),
     long_description_content_type='text/markdown',
