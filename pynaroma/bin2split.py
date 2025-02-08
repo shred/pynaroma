@@ -3,7 +3,7 @@
 # pynaroma - tools for converting Amiga ROMs and binaries
 #
 # Copyright (C) 2022 Richard "Shred" Körber
-#   https://github.com/shred/pynaroma
+#   https://codeberg.org/shred/pynaroma
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
